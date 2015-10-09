@@ -3,11 +3,18 @@
 var fs = require('fs');
 var os = require('os');
 var path = require('path');
+var fuzzy = require('fuzzy');
 
 var tasksFile = '~/.tasks/tasks.md';
 var firstArgument = process.argv[2];
 var print = console.log;
-var tasks, lines, taskLines, tasks, numberCompleted, numberRemaining;
+var tasks,
+    lines,
+    taskLines,
+    annotatedLines,
+    tasks,
+    numberCompleted,
+    numberRemaining;
 
 // Create storage folder and file if necessary
 tasksFile = tasksFile.replace('~', os.homedir());
@@ -23,31 +30,59 @@ var getTasks = function () {
   var tasks;
 
   lines = fs.readFileSync(tasksFile, 'utf8').split('\n');
-  taskLines = lines.filter(function (line) {
-    return /^- \[[ xX]\]/.test(line);
-  });
 
-  return taskLines.map(function (line) {
+  annotatedLines = lines.map(function (line, index, array) {
     return {
-      isCompleted: /^- \[[xX]\]/.test(line),
-      title: '',
-      line: line
+      line: line,
+      lineNumber: index
     };
   });
-}
+  taskLines = annotatedLines.filter(function (annotatedLine) {
+    return /^- \[[ xX]\] /.test(annotatedLine.line);
+  });
 
-var addTask = function(words) {
-  var taskTitle = '- [ ] ' + words.join(' ');
-  fs.appendFileSync(tasksFile, taskTitle);
-}
+  return taskLines.map(function (annotatedLine) {
+    return {
+      isCompleted: /^- \[[xX]\]/.test(annotatedLine.line),
+      title: annotatedLine.line.slice(6),
+      line: annotatedLine.line,
+      lineNumber: annotatedLine.lineNumber
+    };
+  });
+};
 
-if (firstArgument === 'add') {
-  addTask(process.argv.slice(3));
-} else {
-  // Print remaining and completed tasks
-  tasks = getTasks();
+var logTasks = function () {
+  var tasks = getTasks();
   numberCompleted = tasks.filter((t) => t.isCompleted).length;
   numberRemaining = tasks.length - numberCompleted;
   print(`You have ${numberRemaining} tasks remaining (${numberCompleted} completed):`);
-  print(taskLines.join('\n'));
+  print(tasks.map((task) => task.line).join('\n'));
+};
+
+var addTask = function (words) {
+  // TODO: Add newline detection (for human-edited files)
+  var taskTitle = '- [ ] ' + words.join(' ') + '\n';
+  fs.appendFileSync(tasksFile, taskTitle);
+};
+
+var completeTask = function (fuzzyTask) {
+  var tasks = getTasks();
+  var options = { extract: function(task) { return task.title; } };
+  var results = fuzzy.filter(fuzzyTask, tasks, options);
+  if (results.length === 0) {
+    print('Could not find task');
+  } else {
+    annotatedLines[results[0].original.lineNumber].line = results[0].original.line.replace('[ ]', '[x]');
+    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'), '');
+    print('Completed: ' + results[0].original.title);
+  }
+  logTasks();
+};
+
+if (firstArgument === 'add') {
+  addTask(process.argv.slice(3));
+} else if (firstArgument === 'complete') {
+  completeTask(process.argv.slice(3).join(' '));
+} else {
+  logTasks();
 }
