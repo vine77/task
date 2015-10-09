@@ -36,9 +36,18 @@ var getTasks = function () {
   });
 }
 
-// Print remaining and completed tasks
-tasks = getTasks();
-numberCompleted = tasks.filter((t) => t.isCompleted).length;
-numberRemaining = tasks.length - numberCompleted;
-print(`You have ${numberRemaining} tasks remaining (${numberCompleted} completed):`);
-print(taskLines.join('\n'));
+var addTask = function(words) {
+  var taskTitle = '- [ ] ' + words.join(' ');
+  fs.appendFileSync(tasksFile, taskTitle);
+}
+
+if (firstArgument === 'add') {
+  addTask(process.argv.slice(3));
+} else {
+  // Print remaining and completed tasks
+  tasks = getTasks();
+  numberCompleted = tasks.filter((t) => t.isCompleted).length;
+  numberRemaining = tasks.length - numberCompleted;
+  print(`You have ${numberRemaining} tasks remaining (${numberCompleted} completed):`);
+  print(taskLines.join('\n'));
+}
