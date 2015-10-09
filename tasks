@@ -1,0 +1,24 @@
+#!/usr/bin/env node
+
+var fs = require('fs');
+
+var print = console.log;
+var tasksFile = 'tasks.md';
+var lines, taskLines, tasks, numberCompleted, numberRemaining;
+
+lines = fs.readFileSync(tasksFile, 'utf8').split('\n');
+taskLines = lines.filter(function (line) {
+  return /^- \[[ xX]\]/.test(line);
+});
+tasks = taskLines.map(function (line) {
+  return {
+    isCompleted: /^- \[[xX]\]/.test(line),
+    title: '',
+    line: line
+  };
+});
+numberCompleted = tasks.filter((t) => t.isCompleted).length;
+numberRemaining = tasks.length - numberCompleted;
+
+print(`You have ${numberRemaining} tasks remaining (${numberCompleted} completed):`);
+print(taskLines.join('\n'));
