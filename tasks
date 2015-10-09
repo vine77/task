@@ -1,24 +1,44 @@
 #!/usr/bin/env node
 
 var fs = require('fs');
+var os = require('os');
+var path = require('path');
 
+var tasksFile = '~/.tasks/tasks.md';
+var firstArgument = process.argv[2];
 var print = console.log;
-var tasksFile = 'tasks.md';
-var lines, taskLines, tasks, numberCompleted, numberRemaining;
+var tasks, lines, taskLines, tasks, numberCompleted, numberRemaining;
 
-lines = fs.readFileSync(tasksFile, 'utf8').split('\n');
-taskLines = lines.filter(function (line) {
-  return /^- \[[ xX]\]/.test(line);
-});
-tasks = taskLines.map(function (line) {
-  return {
-    isCompleted: /^- \[[xX]\]/.test(line),
-    title: '',
-    line: line
-  };
-});
+// Create storage folder and file if necessary
+tasksFile = tasksFile.replace('~', os.homedir());
+tasksFolder = path.dirname(tasksFile);
+if (!fs.existsSync(tasksFolder)) {
+  fs.mkdirSync(tasksFolder);
+}
+if (!fs.existsSync(tasksFile)) {
+  fs.writeFileSync(tasksFile, '');
+}
+
+var getTasks = function () {
+  var tasks;
+
+  lines = fs.readFileSync(tasksFile, 'utf8').split('\n');
+  taskLines = lines.filter(function (line) {
+    return /^- \[[ xX]\]/.test(line);
+  });
+
+  return taskLines.map(function (line) {
+    return {
+      isCompleted: /^- \[[xX]\]/.test(line),
+      title: '',
+      line: line
+    };
+  });
+}
+
+// Print remaining and completed tasks
+tasks = getTasks();
 numberCompleted = tasks.filter((t) => t.isCompleted).length;
 numberRemaining = tasks.length - numberCompleted;
-
 print(`You have ${numberRemaining} tasks remaining (${numberCompleted} completed):`);
 print(taskLines.join('\n'));
