@@ -2,12 +2,13 @@
   "name": "todo",
   "version": "0.0.1",
   "description": "",
-  "main": "tasks",
+  "main": "task",
   "dependencies": {
     "fuzzy": "^0.1.1"
   },
   "devDependencies": {},
   "scripts": {
+    "start": "node task",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Nathan Ward",
