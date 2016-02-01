@@ -1,14 +1,16 @@
 #!/usr/bin/env node
+"use strict";
 
 var fs = require('fs');
 var os = require('os');
 var path = require('path');
 var fuzzy = require('fuzzy');
 
-var tasksFile = '~/.tasks/tasks.md';
-var firstArgument = process.argv[2];
-var print = console.log;
-var tasks,
+var tasksFile = '~/.tasks/tasks.md',
+    firstArgument = process.argv[2],
+    print = console.log,
+    tasksFolder,
+    tasks,
     lines,
     taskLines,
     annotatedLines,
