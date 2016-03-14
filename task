@@ -96,12 +96,29 @@ var removeTask = function (fuzzyTask) {
   logTasks();
 };
 
+var prioritizeTask = function (fuzzyTask) {
+  var tasks = getTasks();
+  var options = { extract: function(task) { return task.title; } };
+  var results = fuzzy.filter(fuzzyTask, tasks, options);
+  if (results.length === 0) {
+    print('Could not find task');
+  } else {
+    var task = annotatedLines.splice(results[0].original.lineNumber, 1)[0];
+    annotatedLines.unshift(task);
+    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'), '');
+    print('Removed: ' + results[0].original.title);
+  }
+  logTasks();
+};
+
 if (firstArgument === 'add') {
   addTask(process.argv.slice(3).join(' '));
 } else if (firstArgument === 'complete') {
   completeTask(process.argv.slice(3).join(' '));
 } else if (firstArgument === 'remove' || firstArgument === 'delete') {
   removeTask(process.argv.slice(3).join(' '));
+} else if (firstArgument === 'prioritize' || firstArgument === 'top') {
+  prioritizeTask(process.argv.slice(3).join(' '));
 } else {
   logTasks();
 }
