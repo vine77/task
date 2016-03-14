@@ -2,12 +2,14 @@
 
 ## Installation
 
-* `brew install node` (requires Node 4.0+)
-* `npm install -g https://github.com/vine77/task.git`
+- `brew install node` (requires Node 4.0+)
+- `npm install -g https://github.com/vine77/task.git`
 
 ## Usage
 
-* `task` lists your tasks
-* `task add {New task}` adds a new task
-* `task complete {Completed task}` marks a task as completed
-* `task remove {Removed task}` removes task from list
+- `task` lists your tasks
+- `task add {title}` adds a new task
+- `task complete {title}` marks a task as completed
+- `task remove {title}` removes task from list
+
+Note: `title` can be a partial task name (as long as it matches only one task)
