@@ -61,10 +61,11 @@ var logTasks = function () {
   print(tasks.map((task) => task.line).join('\n'));
 };
 
-var addTask = function (words) {
+var addTask = function (title) {
   // TODO: Add newline detection (for human-edited files)
-  var taskTitle = '- [ ] ' + words.join(' ') + '\n';
+  var taskTitle = '- [ ] ' + title + '\n';
   fs.appendFileSync(tasksFile, taskTitle);
+  logTasks();
 };
 
 var completeTask = function (fuzzyTask) {
@@ -82,7 +83,7 @@ var completeTask = function (fuzzyTask) {
 };
 
 if (firstArgument === 'add') {
-  addTask(process.argv.slice(3));
+  addTask(process.argv.slice(3).join(' '));
 } else if (firstArgument === 'complete') {
   completeTask(process.argv.slice(3).join(' '));
 } else {
