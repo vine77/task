@@ -10,3 +10,4 @@
 * `task` lists your tasks
 * `task add {New task}` adds a new task
 * `task complete {Completed task}` marks a task as completed
+* `task remove {Removed task}` removes task from list
