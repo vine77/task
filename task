@@ -72,6 +72,7 @@ var completeTask = function (fuzzyTask) {
   var tasks = getTasks();
   var options = { extract: function(task) { return task.title; } };
   var results = fuzzy.filter(fuzzyTask, tasks, options);
+  // TODO: Use results[].score to handle cases such as the same search string existing in multiple tasks
   if (results.length === 0) {
     print('Could not find task');
   } else {
@@ -126,15 +127,42 @@ var appendToTask = function (fuzzyTask, stringToAppend) {
 };
 
 if (firstArgument === 'add') {
-  addTask(process.argv.slice(3).join(' '));
+  var args = process.argv.slice(3);
+  if (args.length === 0) {
+    print('No search text provided');
+  } else {
+    addTask(args.join(' '));
+  }
 } else if (firstArgument === 'complete' || firstArgument === 'finish') {
-  completeTask(process.argv.slice(3).join(' '));
+  var args = process.argv.slice(3);
+  if (args.length === 0) {
+    print('No search text provided');
+  } else {
+    completeTask(args.join(' '));
+  }
 } else if (firstArgument === 'remove' || firstArgument === 'delete') {
-  removeTask(process.argv.slice(3).join(' '));
+  var args = process.argv.slice(3);
+  if (args.length === 0) {
+    print('No search text provided');
+  } else {
+    removeTask(args.join(' '));
+  }
 } else if (firstArgument === 'prioritize' || firstArgument === 'top') {
-  prioritizeTask(process.argv.slice(3).join(' '));
+  var args = process.argv.slice(3);
+  if (args.length === 0) {
+    print('No search text provided');
+  } else {
+    prioritizeTask(args.join(' '));
+  }
 } else if (firstArgument == 'append') {
-  appendToTask(process.argv.slice(3, 4)[0], process.argv.slice(4).join(' '));
+  var args = process.argv.slice(3);
+  if (args.length === 0) {
+    print('No search text provided');
+  } else if (args.length === 1) {
+    print('No text provided to append');
+  } else {
+    appendToTask(args.slice(0, 1)[0], args.slice(1).join(' '));
+  }
 } else {
   logTasks();
 }
