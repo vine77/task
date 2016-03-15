@@ -111,6 +111,20 @@ var prioritizeTask = function (fuzzyTask) {
   logTasks();
 };
 
+var appendToTask = function (fuzzyTask, stringToAppend) {
+  var tasks = getTasks();
+  var options = { extract: function(task) { return task.title; } };
+  var results = fuzzy.filter(fuzzyTask, tasks, options);
+  if (results.length === 0) {
+    print('Could not find task');
+  } else {
+    annotatedLines[results[0].original.lineNumber].line = results[0].original.line + ' ' + stringToAppend;
+    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'), '');
+    print('Appended to: ' + results[0].original.title + ' ' + stringToAppend);
+  }
+  logTasks();
+};
+
 if (firstArgument === 'add') {
   addTask(process.argv.slice(3).join(' '));
 } else if (firstArgument === 'complete' || firstArgument === 'finish') {
@@ -119,6 +133,8 @@ if (firstArgument === 'add') {
   removeTask(process.argv.slice(3).join(' '));
 } else if (firstArgument === 'prioritize' || firstArgument === 'top') {
   prioritizeTask(process.argv.slice(3).join(' '));
+} else if (firstArgument == 'append') {
+  appendToTask(process.argv.slice(3, 4)[0], process.argv.slice(4).join(' '));
 } else {
   logTasks();
 }
