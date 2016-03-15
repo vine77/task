@@ -29,8 +29,6 @@ if (!fs.existsSync(tasksFile)) {
 }
 
 var getTasks = function () {
-  var tasks;
-
   lines = fs.readFileSync(tasksFile, 'utf8').split('\n');
 
   annotatedLines = lines.map(function (line, index, array) {
@@ -62,8 +60,12 @@ var logTasks = function () {
 };
 
 var addTask = function (title) {
-  // TODO: Add newline detection (for human-edited files)
-  var taskTitle = '- [ ] ' + title + '\n';
+  var taskTitle = '- [ ] ' + title + '\n',
+      fileHasTrailingNewline = fs.readFileSync(tasksFile, 'utf8').split('\n').slice(-1)[0] === '';
+
+  if (!fileHasTrailingNewline) {
+    taskTitle = '\n' + taskTitle;
+  }
   fs.appendFileSync(tasksFile, taskTitle);
   logTasks();
 };
@@ -77,7 +79,7 @@ var completeTask = function (fuzzyTask) {
     print('Could not find task');
   } else {
     annotatedLines[results[0].original.lineNumber].line = results[0].original.line.replace('[ ]', '[x]');
-    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'), '');
+    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'));
     print('Completed: ' + results[0].original.title);
   }
   logTasks();
@@ -91,7 +93,7 @@ var markTaskIncomplete = function (fuzzyTask) {
     print('Could not find task');
   } else {
     annotatedLines[results[0].original.lineNumber].line = results[0].original.line.replace(/\[[xX]\]/, '[ ]');
-    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'), '');
+    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'));
     print('Incomplete: ' + results[0].original.title);
   }
   logTasks();
@@ -105,7 +107,7 @@ var removeTask = function (fuzzyTask) {
     print('Could not find task');
   } else {
     annotatedLines.splice(results[0].original.lineNumber, 1);
-    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'), '');
+    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'));
     print('Removed: ' + results[0].original.title);
   }
   logTasks();
@@ -120,7 +122,7 @@ var prioritizeTask = function (fuzzyTask) {
   } else {
     var task = annotatedLines.splice(results[0].original.lineNumber, 1)[0];
     annotatedLines.unshift(task);
-    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'), '');
+    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'));
     print('Removed: ' + results[0].original.title);
   }
   logTasks();
@@ -134,7 +136,7 @@ var appendToTask = function (fuzzyTask, stringToAppend) {
     print('Could not find task');
   } else {
     annotatedLines[results[0].original.lineNumber].line = results[0].original.line + ' ' + stringToAppend;
-    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'), '');
+    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'));
     print('Appended to: ' + results[0].original.title + ' ' + stringToAppend);
   }
   logTasks();
