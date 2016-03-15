@@ -1,45 +1,43 @@
 #!/usr/bin/env node
-"use strict";
+'use strict'
 
-var fs = require('fs');
-var os = require('os');
-var path = require('path');
-var fuzzy = require('fuzzy');
+var fs = require('fs')
+var os = require('os')
+var path = require('path')
+var fuzzy = require('fuzzy')
 
-var tasksFile = '~/.tasks/tasks.md',
-    firstArgument = process.argv[2],
-    print = console.log,
-    tasksFolder,
-    tasks,
-    lines,
-    taskLines,
-    annotatedLines,
-    tasks,
-    numberCompleted,
-    numberRemaining;
+var tasksFile = '~/.tasks/tasks.md'
+var firstArgument = process.argv[2]
+var args = process.argv.slice(3)
+var print = console.log
+var tasksFolder
+var lines
+var taskLines
+var annotatedLines
+var numberCompleted
+var numberRemaining
 
 // Create storage folder and file if necessary
-tasksFile = tasksFile.replace('~', os.homedir());
-tasksFolder = path.dirname(tasksFile);
+tasksFile = tasksFile.replace('~', os.homedir())
+tasksFolder = path.dirname(tasksFile)
 if (!fs.existsSync(tasksFolder)) {
-  fs.mkdirSync(tasksFolder);
+  fs.mkdirSync(tasksFolder)
 }
 if (!fs.existsSync(tasksFile)) {
-  fs.writeFileSync(tasksFile, '');
+  fs.writeFileSync(tasksFile, '')
 }
 
 var getTasks = function () {
-  lines = fs.readFileSync(tasksFile, 'utf8').split('\n');
-
+  lines = fs.readFileSync(tasksFile, 'utf8').split('\n')
   annotatedLines = lines.map(function (line, index, array) {
     return {
       line: line,
       lineNumber: index
-    };
-  });
+    }
+  })
   taskLines = annotatedLines.filter(function (annotatedLine) {
-    return /^- \[[ xX]\] /.test(annotatedLine.line);
-  });
+    return /^- \[[ xX]\] /.test(annotatedLine.line)
+  })
 
   return taskLines.map(function (annotatedLine) {
     return {
@@ -47,145 +45,145 @@ var getTasks = function () {
       title: annotatedLine.line.slice(6),
       line: annotatedLine.line,
       lineNumber: annotatedLine.lineNumber
-    };
-  });
-};
+    }
+  })
+}
 
 var logTasks = function () {
-  var tasks = getTasks();
-  numberCompleted = tasks.filter((t) => t.isCompleted).length;
-  numberRemaining = tasks.length - numberCompleted;
-  print(`You have ${numberRemaining} tasks remaining (${numberCompleted} completed):`);
-  print(tasks.map((task) => task.line).join('\n'));
-};
+  var tasks = getTasks()
+
+  numberCompleted = tasks.filter((t) => t.isCompleted).length
+  numberRemaining = tasks.length - numberCompleted
+  print(`You have ${numberRemaining} tasks remaining (${numberCompleted} completed):`)
+  print(tasks.map((task) => task.line).join('\n'))
+}
 
 var addTask = function (title) {
-  var taskTitle = '- [ ] ' + title + '\n',
-      fileHasTrailingNewline = fs.readFileSync(tasksFile, 'utf8').split('\n').slice(-1)[0] === '';
+  var taskTitle = '- [ ] ' + title + '\n'
+  var fileHasTrailingNewline = fs.readFileSync(tasksFile, 'utf8').split('\n').slice(-1)[0] === ''
 
   if (!fileHasTrailingNewline) {
-    taskTitle = '\n' + taskTitle;
+    taskTitle = '\n' + taskTitle
   }
-  fs.appendFileSync(tasksFile, taskTitle);
-  logTasks();
-};
+  fs.appendFileSync(tasksFile, taskTitle)
+  logTasks()
+}
 
 var completeTask = function (fuzzyTask) {
-  var tasks = getTasks();
-  var options = { extract: function(task) { return task.title; } };
-  var results = fuzzy.filter(fuzzyTask, tasks, options);
+  var tasks = getTasks()
+  var options = { extract: function (task) { return task.title } }
+  var results = fuzzy.filter(fuzzyTask, tasks, options)
+
   // TODO: Use results[].score to handle cases such as the same search string existing in multiple tasks
   if (results.length === 0) {
-    print('Could not find task');
+    print('Could not find task')
   } else {
-    annotatedLines[results[0].original.lineNumber].line = results[0].original.line.replace('[ ]', '[x]');
-    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'));
-    print('Completed: ' + results[0].original.title);
+    annotatedLines[results[0].original.lineNumber].line = results[0].original.line.replace('[ ]', '[x]')
+    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'))
+    print('Completed: ' + results[0].original.title)
   }
-  logTasks();
-};
+  logTasks()
+}
 
 var markTaskIncomplete = function (fuzzyTask) {
-  var tasks = getTasks();
-  var options = { extract: function(task) { return task.title; } };
-  var results = fuzzy.filter(fuzzyTask, tasks, options);
+  var tasks = getTasks()
+  var options = { extract: function (task) { return task.title } }
+  var results = fuzzy.filter(fuzzyTask, tasks, options)
+
   if (results.length === 0) {
-    print('Could not find task');
+    print('Could not find task')
   } else {
-    annotatedLines[results[0].original.lineNumber].line = results[0].original.line.replace(/\[[xX]\]/, '[ ]');
-    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'));
-    print('Incomplete: ' + results[0].original.title);
+    annotatedLines[results[0].original.lineNumber].line = results[0].original.line.replace(/\[[xX]\]/, '[ ]')
+    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'))
+    print('Incomplete: ' + results[0].original.title)
   }
-  logTasks();
-};
+  logTasks()
+}
 
 var removeTask = function (fuzzyTask) {
-  var tasks = getTasks();
-  var options = { extract: function(task) { return task.title; } };
-  var results = fuzzy.filter(fuzzyTask, tasks, options);
+  var tasks = getTasks()
+  var options = { extract: function (task) { return task.title } }
+  var results = fuzzy.filter(fuzzyTask, tasks, options)
+
   if (results.length === 0) {
-    print('Could not find task');
+    print('Could not find task')
   } else {
-    annotatedLines.splice(results[0].original.lineNumber, 1);
-    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'));
-    print('Removed: ' + results[0].original.title);
+    annotatedLines.splice(results[0].original.lineNumber, 1)
+    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'))
+    print('Removed: ' + results[0].original.title)
   }
-  logTasks();
-};
+  logTasks()
+}
 
 var prioritizeTask = function (fuzzyTask) {
-  var tasks = getTasks();
-  var options = { extract: function(task) { return task.title; } };
-  var results = fuzzy.filter(fuzzyTask, tasks, options);
+  var tasks = getTasks()
+  var options = { extract: function (task) { return task.title } }
+  var results = fuzzy.filter(fuzzyTask, tasks, options)
+
   if (results.length === 0) {
-    print('Could not find task');
+    print('Could not find task')
   } else {
-    var task = annotatedLines.splice(results[0].original.lineNumber, 1)[0];
-    annotatedLines.unshift(task);
-    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'));
-    print('Removed: ' + results[0].original.title);
+    var task = annotatedLines.splice(results[0].original.lineNumber, 1)[0]
+    annotatedLines.unshift(task)
+    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'))
+    print('Removed: ' + results[0].original.title)
   }
-  logTasks();
-};
+  logTasks()
+}
 
 var appendToTask = function (fuzzyTask, stringToAppend) {
-  var tasks = getTasks();
-  var options = { extract: function(task) { return task.title; } };
-  var results = fuzzy.filter(fuzzyTask, tasks, options);
+  var tasks = getTasks()
+  var options = { extract: function (task) { return task.title } }
+  var results = fuzzy.filter(fuzzyTask, tasks, options)
+
   if (results.length === 0) {
-    print('Could not find task');
+    print('Could not find task')
   } else {
-    annotatedLines[results[0].original.lineNumber].line = results[0].original.line + ' ' + stringToAppend;
-    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'));
-    print('Appended to: ' + results[0].original.title + ' ' + stringToAppend);
+    annotatedLines[results[0].original.lineNumber].line = results[0].original.line + ' ' + stringToAppend
+    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'))
+    print('Appended to: ' + results[0].original.title + ' ' + stringToAppend)
   }
-  logTasks();
-};
+  logTasks()
+}
 
 if (firstArgument === 'add') {
-  var args = process.argv.slice(3);
   if (args.length === 0) {
-    print('No search text provided');
+    print('No search text provided')
   } else {
-    addTask(args.join(' '));
+    addTask(args.join(' '))
   }
 } else if (firstArgument === 'complete' || firstArgument === 'finish') {
-  var args = process.argv.slice(3);
   if (args.length === 0) {
-    print('No search text provided');
+    print('No search text provided')
   } else {
-    completeTask(args.join(' '));
+    completeTask(args.join(' '))
   }
 } else if (firstArgument === 'incomplete' || firstArgument === 'open') {
-  var args = process.argv.slice(3);
   if (args.length === 0) {
-    print('No search text provided');
+    print('No search text provided')
   } else {
-    markTaskIncomplete(args.join(' '));
+    markTaskIncomplete(args.join(' '))
   }
 } else if (firstArgument === 'remove' || firstArgument === 'delete') {
-  var args = process.argv.slice(3);
   if (args.length === 0) {
-    print('No search text provided');
+    print('No search text provided')
   } else {
-    removeTask(args.join(' '));
+    removeTask(args.join(' '))
   }
 } else if (firstArgument === 'prioritize' || firstArgument === 'top') {
-  var args = process.argv.slice(3);
   if (args.length === 0) {
-    print('No search text provided');
+    print('No search text provided')
   } else {
-    prioritizeTask(args.join(' '));
+    prioritizeTask(args.join(' '))
   }
-} else if (firstArgument == 'append') {
-  var args = process.argv.slice(3);
+} else if (firstArgument === 'append') {
   if (args.length === 0) {
-    print('No search text provided');
+    print('No search text provided')
   } else if (args.length === 1) {
-    print('No text provided to append');
+    print('No text provided to append')
   } else {
-    appendToTask(args.slice(0, 1)[0], args.slice(1).join(' '));
+    appendToTask(args.slice(0, 1)[0], args.slice(1).join(' '))
   }
 } else {
-  logTasks();
+  logTasks()
 }
