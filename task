@@ -1,21 +1,21 @@
 #!/usr/bin/env node
 'use strict'
 
-var fs = require('fs')
-var os = require('os')
-var path = require('path')
-var fuzzy = require('fuzzy')
+const fs = require('fs')
+const os = require('os')
+const path = require('path')
+const fuzzy = require('fuzzy')
 
-var tasksFile = '~/.tasks/tasks.md'
-var firstArgument = process.argv[2]
-var args = process.argv.slice(3)
-var print = console.log
-var tasksFolder
-var lines
-var taskLines
-var annotatedLines
-var numberCompleted
-var numberRemaining
+const firstArgument = process.argv[2]
+const args = process.argv.slice(3)
+const print = console.log
+let tasksFile = '~/.tasks/tasks.md'
+let tasksFolder
+let lines
+let taskLines
+let annotatedLines
+let numberCompleted
+let numberRemaining
 
 // Create storage folder and file if necessary
 tasksFile = tasksFile.replace('~', os.homedir())
@@ -27,7 +27,7 @@ if (!fs.existsSync(tasksFile)) {
   fs.writeFileSync(tasksFile, '')
 }
 
-var getTasks = function () {
+const getTasks = function () {
   lines = fs.readFileSync(tasksFile, 'utf8').split('\n')
   annotatedLines = lines.map(function (line, index, array) {
     return {
@@ -49,8 +49,8 @@ var getTasks = function () {
   })
 }
 
-var logTasks = function () {
-  var tasks = getTasks()
+const logTasks = function () {
+  const tasks = getTasks()
 
   numberCompleted = tasks.filter((t) => t.isCompleted).length
   numberRemaining = tasks.length - numberCompleted
@@ -58,21 +58,18 @@ var logTasks = function () {
   print(tasks.map((task) => task.line).join('\n'))
 }
 
-var addTask = function (title) {
-  var taskTitle = '- [ ] ' + title + '\n'
-  var fileHasTrailingNewline = fs.readFileSync(tasksFile, 'utf8').split('\n').slice(-1)[0] === ''
+const addTask = function (title) {
+  const taskTitle = '- [ ] ' + title + '\n'
+  const fileHasTrailingNewline = fs.readFileSync(tasksFile, 'utf8').split('\n').slice(-1)[0] === ''
 
-  if (!fileHasTrailingNewline) {
-    taskTitle = '\n' + taskTitle
-  }
-  fs.appendFileSync(tasksFile, taskTitle)
+  fs.appendFileSync(tasksFile, (fileHasTrailingNewline ? '' : '\n') + taskTitle)
   logTasks()
 }
 
-var completeTask = function (fuzzyTask) {
-  var tasks = getTasks()
-  var options = { extract: function (task) { return task.title } }
-  var results = fuzzy.filter(fuzzyTask, tasks, options)
+const completeTask = function (fuzzyTask) {
+  const tasks = getTasks()
+  const options = { extract: function (task) { return task.title } }
+  const results = fuzzy.filter(fuzzyTask, tasks, options)
 
   // TODO: Use results[].score to handle cases such as the same search string existing in multiple tasks
   if (results.length === 0) {
@@ -85,10 +82,10 @@ var completeTask = function (fuzzyTask) {
   logTasks()
 }
 
-var markTaskIncomplete = function (fuzzyTask) {
-  var tasks = getTasks()
-  var options = { extract: function (task) { return task.title } }
-  var results = fuzzy.filter(fuzzyTask, tasks, options)
+const markTaskIncomplete = function (fuzzyTask) {
+  const tasks = getTasks()
+  const options = { extract: function (task) { return task.title } }
+  const results = fuzzy.filter(fuzzyTask, tasks, options)
 
   if (results.length === 0) {
     print('Could not find task')
@@ -100,10 +97,10 @@ var markTaskIncomplete = function (fuzzyTask) {
   logTasks()
 }
 
-var removeTask = function (fuzzyTask) {
-  var tasks = getTasks()
-  var options = { extract: function (task) { return task.title } }
-  var results = fuzzy.filter(fuzzyTask, tasks, options)
+const removeTask = function (fuzzyTask) {
+  const tasks = getTasks()
+  const options = { extract: function (task) { return task.title } }
+  const results = fuzzy.filter(fuzzyTask, tasks, options)
 
   if (results.length === 0) {
     print('Could not find task')
@@ -115,15 +112,15 @@ var removeTask = function (fuzzyTask) {
   logTasks()
 }
 
-var prioritizeTask = function (fuzzyTask) {
-  var tasks = getTasks()
-  var options = { extract: function (task) { return task.title } }
-  var results = fuzzy.filter(fuzzyTask, tasks, options)
+const prioritizeTask = function (fuzzyTask) {
+  const tasks = getTasks()
+  const options = { extract: function (task) { return task.title } }
+  const results = fuzzy.filter(fuzzyTask, tasks, options)
 
   if (results.length === 0) {
     print('Could not find task')
   } else {
-    var task = annotatedLines.splice(results[0].original.lineNumber, 1)[0]
+    const task = annotatedLines.splice(results[0].original.lineNumber, 1)[0]
     annotatedLines.unshift(task)
     fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'))
     print('Removed: ' + results[0].original.title)
@@ -131,10 +128,10 @@ var prioritizeTask = function (fuzzyTask) {
   logTasks()
 }
 
-var appendToTask = function (fuzzyTask, stringToAppend) {
-  var tasks = getTasks()
-  var options = { extract: function (task) { return task.title } }
-  var results = fuzzy.filter(fuzzyTask, tasks, options)
+const appendToTask = function (fuzzyTask, stringToAppend) {
+  const tasks = getTasks()
+  const options = { extract: function (task) { return task.title } }
+  const results = fuzzy.filter(fuzzyTask, tasks, options)
 
   if (results.length === 0) {
     print('Could not find task')
