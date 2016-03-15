@@ -83,6 +83,20 @@ var completeTask = function (fuzzyTask) {
   logTasks();
 };
 
+var markTaskIncomplete = function (fuzzyTask) {
+  var tasks = getTasks();
+  var options = { extract: function(task) { return task.title; } };
+  var results = fuzzy.filter(fuzzyTask, tasks, options);
+  if (results.length === 0) {
+    print('Could not find task');
+  } else {
+    annotatedLines[results[0].original.lineNumber].line = results[0].original.line.replace(/\[[xX]\]/, '[ ]');
+    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'), '');
+    print('Incomplete: ' + results[0].original.title);
+  }
+  logTasks();
+};
+
 var removeTask = function (fuzzyTask) {
   var tasks = getTasks();
   var options = { extract: function(task) { return task.title; } };
@@ -139,6 +153,13 @@ if (firstArgument === 'add') {
     print('No search text provided');
   } else {
     completeTask(args.join(' '));
+  }
+} else if (firstArgument === 'incomplete' || firstArgument === 'open') {
+  var args = process.argv.slice(3);
+  if (args.length === 0) {
+    print('No search text provided');
+  } else {
+    markTaskIncomplete(args.join(' '));
   }
 } else if (firstArgument === 'remove' || firstArgument === 'delete') {
   var args = process.argv.slice(3);
