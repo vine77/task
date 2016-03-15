@@ -128,6 +128,22 @@ const prioritizeTask = function (fuzzyTask) {
   logTasks()
 }
 
+const deprioritizeTask = function (fuzzyTask) {
+  const tasks = getTasks()
+  const options = { extract: function (task) { return task.title } }
+  const results = fuzzy.filter(fuzzyTask, tasks, options)
+
+  if (results.length === 0) {
+    print('Could not find task')
+  } else {
+    const task = annotatedLines.splice(results[0].original.lineNumber, 1)[0]
+    annotatedLines.push(task)
+    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'))
+    print('Removed: ' + results[0].original.title)
+  }
+  logTasks()
+}
+
 const appendToTask = function (fuzzyTask, stringToAppend) {
   const tasks = getTasks()
   const options = { extract: function (task) { return task.title } }
@@ -172,6 +188,12 @@ if (firstArgument === 'add') {
     print('No search text provided')
   } else {
     prioritizeTask(args.join(' '))
+  }
+} else if (firstArgument === 'deprioritize' || firstArgument === 'bottom') {
+  if (args.length === 0) {
+    print('No search text provided')
+  } else {
+    deprioritizeTask(args.join(' '))
   }
 } else if (firstArgument === 'append') {
   if (args.length === 0) {
