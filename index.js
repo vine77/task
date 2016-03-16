@@ -161,7 +161,7 @@ const appendToTask = function (fuzzyTask, stringToAppend) {
 
 if (firstArgument === 'log' || firstArgument === 'ls') {
   logTasks()
-} else if (firstArgument === 'check' || firstArgument === 'complete' || firstArgument === 'finish') {
+} else if (firstArgument === 'check' || firstArgument === 'complete' || firstArgument === 'finish' || firstArgument === 'done') {
   if (args.length === 0) {
     print('No search text provided')
   } else {
