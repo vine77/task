@@ -20,5 +20,5 @@
   "author": "Nathan Ward",
   "license": "MIT",
   "preferGlobal": true,
-  "bin": "./task"
+  "bin": "./index.js"
 }
