@@ -159,13 +159,7 @@ const appendToTask = function (fuzzyTask, stringToAppend) {
   logTasks()
 }
 
-if (firstArgument === 'add') {
-  if (args.length === 0) {
-    print('No search text provided')
-  } else {
-    addTask(args.join(' '))
-  }
-} else if (firstArgument === 'complete' || firstArgument === 'finish') {
+if (firstArgument === 'complete' || firstArgument === 'finish') {
   if (args.length === 0) {
     print('No search text provided')
   } else {
@@ -203,6 +197,16 @@ if (firstArgument === 'add') {
   } else {
     appendToTask(args.slice(0, 1)[0], args.slice(1).join(' '))
   }
+} else if (firstArgument === 'add') {
+  if (args.length === 0) {
+    print('No search text provided')
+  } else {
+    addTask(args.join(' '))
+  }
+} else if (firstArgument !== undefined) {
+  // Default to "add" command if arguments exist without matching a command
+  addTask(process.argv.slice(2).join(' '));
 } else {
+  // Log tasks if no arguments are provided
   logTasks()
 }
