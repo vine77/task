@@ -161,13 +161,13 @@ const appendToTask = function (fuzzyTask, stringToAppend) {
 
 if (firstArgument === 'log' || firstArgument === 'ls') {
   logTasks()
-} else if (firstArgument === 'complete' || firstArgument === 'finish') {
+} else if (firstArgument === 'check' || firstArgument === 'complete' || firstArgument === 'finish') {
   if (args.length === 0) {
     print('No search text provided')
   } else {
     completeTask(args.join(' '))
   }
-} else if (firstArgument === 'incomplete' || firstArgument === 'open') {
+} else if (firstArgument === 'uncheck' || firstArgument === 'incomplete' || firstArgument === 'open') {
   if (args.length === 0) {
     print('No search text provided')
   } else {
