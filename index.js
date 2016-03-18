@@ -159,6 +159,20 @@ const appendToTask = function (fuzzyTask, stringToAppend) {
   logTasks()
 }
 
+const openTask = function () {
+  const exec = require('child_process').exec
+  let open
+
+  if (process.platform === 'darwin') {
+    open = 'open'
+  } else if (process.platform === 'win32' || process.platform === 'win64') {
+    open = 'start'
+  } else {
+    open = 'xdg-open'
+  }
+  exec(`${open} ${tasksFile}`)
+}
+
 if (firstArgument === 'log' || firstArgument === 'ls') {
   logTasks()
 } else if (firstArgument === 'check' || firstArgument === 'complete' || firstArgument === 'finish' || firstArgument === 'done') {
@@ -167,7 +181,7 @@ if (firstArgument === 'log' || firstArgument === 'ls') {
   } else {
     completeTask(args.join(' '))
   }
-} else if (firstArgument === 'uncheck' || firstArgument === 'incomplete' || firstArgument === 'open') {
+} else if (firstArgument === 'uncheck' || firstArgument === 'incomplete') {
   if (args.length === 0) {
     print('No search text provided')
   } else {
@@ -199,6 +213,8 @@ if (firstArgument === 'log' || firstArgument === 'ls') {
   } else {
     appendToTask(args.slice(0, 1)[0], args.slice(1).join(' '))
   }
+} else if (firstArgument === 'open' || firstArgument === 'edit') {
+  openTask()
 } else if (firstArgument === 'add') {
   if (args.length === 0) {
     print('No search text provided')
