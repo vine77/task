@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-'use strict'
 
 const fs = require('fs')
 const os = require('os')
@@ -27,94 +26,129 @@ if (!fs.existsSync(tasksFile)) {
   fs.writeFileSync(tasksFile, '')
 }
 
-const getTasks = function () {
+const getTasks = function() {
   lines = fs.readFileSync(tasksFile, 'utf8').split('\n')
-  annotatedLines = lines.map(function (line, index, array) {
+  annotatedLines = lines.map(function(line, index, array) {
     return {
-      line: line,
-      lineNumber: index
+      line,
+      lineNumber: index,
     }
   })
-  taskLines = annotatedLines.filter(function (annotatedLine) {
+  taskLines = annotatedLines.filter(function(annotatedLine) {
     return /^- \[[ xX]\] /.test(annotatedLine.line)
   })
 
-  return taskLines.map(function (annotatedLine) {
+  return taskLines.map(function(annotatedLine) {
     return {
       isCompleted: /^- \[[xX]\]/.test(annotatedLine.line),
       title: annotatedLine.line.slice(6),
       line: annotatedLine.line,
-      lineNumber: annotatedLine.lineNumber
+      lineNumber: annotatedLine.lineNumber,
     }
   })
 }
 
-const logTasks = function () {
+const logTasks = function() {
   const tasks = getTasks()
 
-  numberCompleted = tasks.filter((t) => t.isCompleted).length
+  numberCompleted = tasks.filter(t => t.isCompleted).length
   numberRemaining = tasks.length - numberCompleted
-  print(`You have ${numberRemaining} tasks remaining (${numberCompleted} completed):`)
-  print(tasks.map((task) => task.line).join('\n'))
+  print(
+    `You have ${numberRemaining} tasks remaining (${numberCompleted} completed):`,
+  )
+  print(tasks.map(task => task.line).join('\n'))
 }
 
-const addTask = function (title) {
-  const taskTitle = '- [ ] ' + title + '\n'
-  const fileHasTrailingNewline = fs.readFileSync(tasksFile, 'utf8').split('\n').slice(-1)[0] === ''
+const addTask = function(title) {
+  const taskTitle = `- [ ] ${title}\n`
+  const fileHasTrailingNewline =
+    fs
+      .readFileSync(tasksFile, 'utf8')
+      .split('\n')
+      .slice(-1)[0] === ''
 
   fs.appendFileSync(tasksFile, (fileHasTrailingNewline ? '' : '\n') + taskTitle)
   logTasks()
 }
 
-const completeTask = function (fuzzyTask) {
+const completeTask = function(fuzzyTask) {
   const tasks = getTasks()
-  const options = { extract: function (task) { return task.title } }
+  const options = {
+    extract(task) {
+      return task.title
+    },
+  }
   const results = fuzzy.filter(fuzzyTask, tasks, options)
 
   // TODO: Use results[].score to handle cases such as the same search string existing in multiple tasks
   if (results.length === 0) {
     print('Could not find task')
   } else {
-    annotatedLines[results[0].original.lineNumber].line = results[0].original.line.replace('[ ]', '[x]')
-    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'))
-    print('Completed: ' + results[0].original.title)
+    annotatedLines[
+      results[0].original.lineNumber
+    ].line = results[0].original.line.replace('[ ]', '[x]')
+    fs.writeFileSync(
+      tasksFile,
+      annotatedLines.map(line => line.line).join('\n'),
+    )
+    print(`Completed: ${results[0].original.title}`)
   }
   logTasks()
 }
 
-const markTaskIncomplete = function (fuzzyTask) {
+const markTaskIncomplete = function(fuzzyTask) {
   const tasks = getTasks()
-  const options = { extract: function (task) { return task.title } }
+  const options = {
+    extract(task) {
+      return task.title
+    },
+  }
   const results = fuzzy.filter(fuzzyTask, tasks, options)
 
   if (results.length === 0) {
     print('Could not find task')
   } else {
-    annotatedLines[results[0].original.lineNumber].line = results[0].original.line.replace(/\[[xX]\]/, '[ ]')
-    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'))
-    print('Incomplete: ' + results[0].original.title)
+    annotatedLines[
+      results[0].original.lineNumber
+    ].line = results[0].original.line.replace(/\[[xX]\]/, '[ ]')
+    fs.writeFileSync(
+      tasksFile,
+      annotatedLines.map(line => line.line).join('\n'),
+    )
+    print(`Incomplete: ${results[0].original.title}`)
   }
   logTasks()
 }
 
-const removeTask = function (fuzzyTask) {
+const removeTask = function(fuzzyTask) {
   const tasks = getTasks()
-  const options = { extract: function (task) { return task.title } }
+  const options = {
+    extract(task) {
+      return task.title
+    },
+  }
   const results = fuzzy.filter(fuzzyTask, tasks, options)
 
   if (results.length === 0) {
     print('Could not find task')
   } else {
     annotatedLines.splice(results[0].original.lineNumber, 1)
-    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'))
-    print('Removed: ' + results[0].original.title)
+    fs.writeFileSync(
+      tasksFile,
+      annotatedLines.map(line => line.line).join('\n'),
+    )
+    print(`Removed: ${results[0].original.title}`)
   }
   logTasks()
 }
 
-const prioritizeTask = function (fuzzyTask) {
+const prioritizeTask = function(fuzzyTask) {
   const tasks = getTasks()
-  const options = { extract: function (task) { return task.title } }
+  const options = {
+    extract(task) {
+      return task.title
+    },
+  }
   const results = fuzzy.filter(fuzzyTask, tasks, options)
 
   if (results.length === 0) {
@@ -122,15 +156,22 @@ const prioritizeTask = function (fuzzyTask) {
   } else {
     const task = annotatedLines.splice(results[0].original.lineNumber, 1)[0]
     annotatedLines.unshift(task)
-    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'))
-    print('Removed: ' + results[0].original.title)
+    fs.writeFileSync(
+      tasksFile,
+      annotatedLines.map(line => line.line).join('\n'),
+    )
+    print(`Removed: ${results[0].original.title}`)
   }
   logTasks()
 }
 
-const deprioritizeTask = function (fuzzyTask) {
+const deprioritizeTask = function(fuzzyTask) {
   const tasks = getTasks()
-  const options = { extract: function (task) { return task.title } }
+  const options = {
+    extract(task) {
+      return task.title
+    },
+  }
   const results = fuzzy.filter(fuzzyTask, tasks, options)
 
   if (results.length === 0) {
@@ -138,28 +179,40 @@ const deprioritizeTask = function (fuzzyTask) {
   } else {
     const task = annotatedLines.splice(results[0].original.lineNumber, 1)[0]
     annotatedLines.push(task)
-    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'))
-    print('Removed: ' + results[0].original.title)
+    fs.writeFileSync(
+      tasksFile,
+      annotatedLines.map(line => line.line).join('\n'),
+    )
+    print(`Removed: ${results[0].original.title}`)
   }
   logTasks()
 }
 
-const appendToTask = function (fuzzyTask, stringToAppend) {
+const appendToTask = function(fuzzyTask, stringToAppend) {
   const tasks = getTasks()
-  const options = { extract: function (task) { return task.title } }
+  const options = {
+    extract(task) {
+      return task.title
+    },
+  }
   const results = fuzzy.filter(fuzzyTask, tasks, options)
 
   if (results.length === 0) {
     print('Could not find task')
   } else {
-    annotatedLines[results[0].original.lineNumber].line = results[0].original.line + ' ' + stringToAppend
-    fs.writeFileSync(tasksFile, annotatedLines.map((line) => line.line).join('\n'))
-    print('Appended to: ' + results[0].original.title + ' ' + stringToAppend)
+    annotatedLines[results[0].original.lineNumber].line = `${
+      results[0].original.line
+    } ${stringToAppend}`
+    fs.writeFileSync(
+      tasksFile,
+      annotatedLines.map(line => line.line).join('\n'),
+    )
+    print(`Appended to: ${results[0].original.title} ${stringToAppend}`)
   }
   logTasks()
 }
 
-const openTask = function () {
+const openTask = function() {
   const exec = require('child_process').exec
   let open
 
@@ -175,7 +228,12 @@ const openTask = function () {
 
 if (firstArgument === 'log' || firstArgument === 'ls') {
   logTasks()
-} else if (firstArgument === 'check' || firstArgument === 'complete' || firstArgument === 'finish' || firstArgument === 'done') {
+} else if (
+  firstArgument === 'check' ||
+  firstArgument === 'complete' ||
+  firstArgument === 'finish' ||
+  firstArgument === 'done'
+) {
   if (args.length === 0) {
     print('No search text provided')
   } else {
@@ -223,7 +281,7 @@ if (firstArgument === 'log' || firstArgument === 'ls') {
   }
 } else if (firstArgument !== undefined) {
   // Default to "add" command if arguments exist without matching a command
-  addTask(process.argv.slice(2).join(' '));
+  addTask(process.argv.slice(2).join(' '))
 } else {
   // Log tasks if no arguments are provided
   logTasks()
