@@ -2,8 +2,8 @@
 
 ## Installation
 
-- `brew install node` (requires Node 4.0+)
-- `npm install -g https://github.com/vine77/task.git`
+- `brew install node`
+- `npm install -g vine77/task`
 
 ## Usage
 
